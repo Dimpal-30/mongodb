@@ -1,0 +1,431 @@
+____________________________________________________________________________________________________________________________________________________________
+
+1.)Display education level & gender where income level is greater than 70k.
+
+ db.customers.find({Income_Level:{$lt:70000}},{Gender:"Female",Education_Level:1,_id:0})
+
+[
+  { Education_Level: 'Doctorate', Gender: 'Female' },
+  { Education_Level: "Bachelor's Degree", Gender: 'Female' },
+  { Education_Level: "Bachelor's Degree", Gender: 'Female' },
+  { Education_Level: "Master's Degree", Gender: 'Female' },
+  { Education_Level: "Master's Degree", Gender: 'Female' },
+  { Education_Level: "Master's Degree", Gender: 'Female' },
+  { Education_Level: 'High School Diploma', Gender: 'Female' },
+  { Education_Level: "Bachelor's Degree", Gender: 'Female' },
+  { Education_Level: 'Associate Degree', Gender: 'Female' },
+  { Education_Level: 'Associate Degree', Gender: 'Female' },
+  { Education_Level: "Bachelor's Degree", Gender: 'Female' },
+  { Education_Level: 'High School Diploma', Gender: 'Female' },
+  { Education_Level: "Bachelor's Degree", Gender: 'Female' },
+  { Education_Level: "Master's Degree", Gender: 'Female' },
+  { Education_Level: 'Associate Degree', Gender: 'Female' },
+  { Education_Level: "Bachelor's Degree", Gender: 'Female' },
+  { Education_Level: "Master's Degree", Gender: 'Female' },
+  { Education_Level: 'Associate Degree', Gender: 'Female' },
+  { Education_Level: "Master's Degree", Gender: 'Female' },
+  { Education_Level: 'High School Diploma', Gender: 'Female' }
+]
+____________________________________________________________________________________________________________________________________________________________
+
+2.)Search the documents where the ocuupation field contains artist or lawyer.
+
+db.customers.find({$or:[{Occupation:"Artist"},{Occupation:"Lawyer"}]})
+
+[
+  {
+    Education_Level: "Master's Degree",
+    Occupation: 'Artist',
+    Policy_Type: 'Business'
+  },
+  {
+    Education_Level: "Master's Degree",
+    Occupation: 'Artist',
+    Policy_Type: 'Group'
+  },
+  {
+    Education_Level: "Master's Degree",
+    Occupation: 'Artist',
+    Policy_Type: 'Business'
+  },
+  {
+    Education_Level: 'Associate Degree',
+    Occupation: 'Lawyer',
+    Policy_Type: 'Business'
+  },
+  {
+    Education_Level: "Bachelor's Degree",
+    Occupation: 'Artist',
+    Policy_Type: 'Group'
+  },
+  {
+    Education_Level: "Bachelor's Degree",
+    Occupation: 'Lawyer',
+    Policy_Type: 'Business'
+  },
+]
+_____________________________________________________________________________________________________________________
+
+3.)Perform Map Reduce function using MONGODB to count average premium amount by policy_type.
+
+var map=function(){emit(this.Policy_Type,this.Premium_Amount);}
+var reduce=function(key,value){return Array.avg(value);}
+db.customers.mapReduce(map,reduce,{out:"Average_Premimum_Amount"})
+db.Average_Premimum_Amount.find()
+
+[
+  { _id: 'Family', value: 2964.3650998068256 },
+  { _id: 'Business', value: 3036.446660946661 },
+  { _id: 'Group', value: 3045.789208436045 },
+  { _id: 'Individual', value: 3041.3277890925547 }
+]
+_____________________________________________________________________________________________________________________
+
+4.)Perform Map Reduce function using MONGODB to display the total communication channel for gujrat state.
+
+
+var map=function(){emit(this.Geographic_Information,this.Coverage_Amount);}
+var reduce=function(key,value){return Array.sum(value);}
+db.customers.mapReduce(map,reduce,{out:"Total_Count"})
+db.Total_Count.find()
+
+[
+  { _id: 'Karnataka', value: 586682053 },
+  { _id: 'Odisha', value: 604091535 },
+  { _id: 'Haryana', value: 928996022 },
+  { _id: 'Chhattisgarh', value: 693423658 },
+  { _id: 'Tamil Nadu', value: 637603819 },
+  { _id: 'Delhi', value: 866596144 },
+  { _id: 'Uttarakhand', value: 881035919 },
+  { _id: 'Rajasthan', value: 571543738 },
+  { _id: 'Assam', value: 717062337 },
+  { _id: 'Dadra and Nagar Haveli', value: 702085250 },
+  { _id: 'Uttar Pradesh', value: 916264810 },
+  { _id: 'Punjab', value: 604434987 },
+  { _id: 'Madhya Pradesh', value: 844067611 },
+  { _id: 'Tripura', value: 674972477 },
+  { _id: 'Jharkhand', value: 783857228 },
+  { _id: 'Lakshadweep', value: 1090614242 },
+  { _id: 'Maharashtra', value: 706641714 },
+  { _id: 'Manipur', value: 658843493 },
+  { _id: 'Sikkim', value: 823000129 },
+  { _id: 'Gujarat', value: 921845091 }
+]
+_____________________________________________________________________________________________________________________
+
+5.)Retrieve the average number of Coverage_Amount, grouped by yearCommunication_Channel, retrieve the results
+Premium_Amount greater than 1000.
+
+db.customers.aggregate([
+{
+	$match:{
+		Premium_Amount:{$gt:1000}
+	}
+},
+{	
+	$group:{
+		_id:"$Communication_Channel",
+		Coverage_Amount:{$avg:"$Coverage_Amount"}
+	}
+}
+])
+
+[
+  { _id: 'Phone', Coverage_Amount: 486207.68420104485 },
+  { _id: 'In-Person Meeting', Coverage_Amount: 503576.3590318243 },
+  { _id: 'Mail', Coverage_Amount: 491008.3516552155 },
+  { _id: 'Text', Coverage_Amount: 478604.0469223672 },
+  { _id: 'Email', Coverage_Amount: 501662.28543379554 }
+]
+_____________________________________________________________________________________________________________________
+
+6.)Display documents where in customers collection field not have state name.
+
+db.customers.find({Geographic_Information:{$nin:["Sikkim","Puducherry","Nagaland"]}},{Geographic_Information:1,_id:0, Age:1,Gender:1})
+[
+  { Age: 23, Gender: 'Female', Geographic_Information: 'Mizoram' },
+  { Age: 26, Gender: 'Male', Geographic_Information: 'Goa' },
+  { Age: 29, Gender: 'Female', Geographic_Information: 'Rajasthan' },
+  { Age: 25, Gender: 'Female', Geographic_Information: 'West Bengal' },
+  {
+    Age: 41,
+    Gender: 'Female',
+    Geographic_Information: 'Uttar Pradesh'
+  },
+  { Age: 55, Gender: 'Male', Geographic_Information: 'Rajasthan' },
+  {
+    Age: 35,
+    Gender: 'Male',
+    Geographic_Information: 'Himachal Pradesh'
+  },
+  { Age: 43, Gender: 'Female', Geographic_Information: 'Manipur' },
+  { Age: 32, Gender: 'Female', Geographic_Information: 'Gujarat' },
+  {
+    Age: 69,
+    Gender: 'Male',
+    Geographic_Information: 'Andaman and Nicobar Islands'
+  },
+  {
+    Age: 47,
+    Gender: 'Female',
+    Geographic_Information: 'Uttar Pradesh'
+  },
+]
+_____________________________________________________________________________________________________________________
+
+7.)language english & customer preference : IN-person & policy_type: family.
+
+db.customers.find({$and:[{Preferred_Language:"English"},{Customer_Preferences:"In-Person Meeting"},{Policy_Type:"Family"}]},{Preferred_Language:1,Customer_Preferences:1,Policy_Type:1,_id:0,Customer_ID:1,Geographic_Information:1})
+
+[
+  {
+    Customer_ID: 68505,
+    Geographic_Information: 'Tripura',
+    Policy_Type: 'Family',
+    Customer_Preferences: 'In-Person Meeting',
+    Preferred_Language: 'English'
+  },
+  {
+    Customer_ID: 45454,
+    Geographic_Information: 'Andaman and Nicobar Islands',
+    Policy_Type: 'Family',
+    Customer_Preferences: 'In-Person Meeting',
+    Preferred_Language: 'English'
+  },
+  {
+    Customer_ID: 76618,
+    Geographic_Information: 'Haryana',
+    Policy_Type: 'Family',
+    Customer_Preferences: 'In-Person Meeting',
+    Preferred_Language: 'English'
+  },
+  {
+    Customer_ID: 31162,
+    Geographic_Information: 'Tripura',
+    Policy_Type: 'Family',
+    Customer_Preferences: 'In-Person Meeting',
+    Preferred_Language: 'English'
+  },
+  {
+    Customer_ID: 24988,
+    Geographic_Information: 'Chhattisgarh',
+    Policy_Type: 'Family',
+    Customer_Preferences: 'In-Person Meeting',
+    Preferred_Language: 'English'
+  },
+]
+
+_______________________________________________________________________________________________________________________
+
+8.)regex and or
+
+db.customers.find({$and:[{$or:[{Marital_Status:{$regex:/^S/}},{Marital_Status:{$regex:/^M/}}]},{Gender:"Male"}]},{_id:0,Gender:1,Marital_Status:1})
+
+[
+  { Gender: 'Male', Marital_Status: 'Single' },
+  { Gender: 'Male', Marital_Status: 'Married' },
+  { Gender: 'Male', Marital_Status: 'Single' },
+  { Gender: 'Male', Marital_Status: 'Single' },
+  { Gender: 'Male', Marital_Status: 'Single' },
+  { Gender: 'Male', Marital_Status: 'Married' },
+  { Gender: 'Male', Marital_Status: 'Married' },
+  { Gender: 'Male', Marital_Status: 'Single' },
+  { Gender: 'Male', Marital_Status: 'Single' },
+  { Gender: 'Male', Marital_Status: 'Married' },
+  { Gender: 'Male', Marital_Status: 'Married' },
+  { Gender: 'Male', Marital_Status: 'Separated' },
+  { Gender: 'Male', Marital_Status: 'Married' },
+  { Gender: 'Male', Marital_Status: 'Married' },
+  { Gender: 'Male', Marital_Status: 'Separated' },
+  { Gender: 'Male', Marital_Status: 'Single' },
+  { Gender: 'Male', Marital_Status: 'Separated' },
+  { Gender: 'Male', Marital_Status: 'Married' },
+  { Gender: 'Male', Marital_Status: 'Single' },
+  { Gender: 'Male', Marital_Status: 'Single' }
+]
+
+ 
+_______________________________________________________________________________________________________________________
+9.)Educaton_Level : Doctorate, Preferred_Contact_Time:"Afternoon", and Segmentation_group greater than 1  & less than 4.
+
+db.customers.find({$and:[{Segmentation_Group:{$gt:1}},{Segmentation_Group:{$lt:4}},{Education_Level:"Doctorate"},{Preferred_Contact_Time:"Afternoon"}]},{_id:0,Education_Level:1,Preferred_Contact_Time:1,Segmentation_Group:1,Customer_ID:1})
+
+[
+  {
+    Customer_ID: 52985,
+    Education_Level: 'Doctorate',
+    Preferred_Contact_Time: 'Afternoon',
+    Segmentation_Group: 3
+  },
+  {
+    Customer_ID: 82166,
+    Education_Level: 'Doctorate',
+    Preferred_Contact_Time: 'Afternoon',
+    Segmentation_Group: 3
+  },
+  {
+    Customer_ID: 21502,
+    Education_Level: 'Doctorate',
+    Preferred_Contact_Time: 'Afternoon',
+    Segmentation_Group: 3
+  },
+  {
+    Customer_ID: 70519,
+    Education_Level: 'Doctorate',
+    Preferred_Contact_Time: 'Afternoon',
+    Segmentation_Group: 3
+  },
+  {
+    Customer_ID: 24133,
+    Education_Level: 'Doctorate',
+    Preferred_Contact_Time: 'Afternoon',
+    Segmentation_Group: 2
+  },
+  {
+    Customer_ID: 28436,
+    Education_Level: 'Doctorate',
+    Preferred_Contact_Time: 'Afternoon',
+    Segmentation_Group: 3
+  },
+]
+
+_________________________________________________________________________________________________________________________________________________________
+10.) display Customer id whose Communication_channel is In-Person Meeting or Text
+
+db.customers.aggregate({$match:{$or:[{Communication_Channel:"In-Person Meeting"},{Communication_Channel:"Text"}]}},{$group:{_id:"$Customer_ID",Communication_Channels:{$addToSet:'$Communication_Channel'}}})
+
+[
+  { _id: 39577, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 87385, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 8394, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 38871, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 86821, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 40635, Communication_Channels: [ 'Text' ] },
+  { _id: 32453, Communication_Channels: [ 'Text' ] },
+  { _id: 26507, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 69274, Communication_Channels: [ 'Text' ] },
+  { _id: 2884, Communication_Channels: [ 'Text' ] },
+  { _id: 96645, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 87102, Communication_Channels: [ 'Text' ] },
+  { _id: 20095, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 66055, Communication_Channels: [ 'Text' ] },
+  { _id: 90904, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 49828, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 68233, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 90438, Communication_Channels: [ 'In-Person Meeting' ] },
+  { _id: 13719, Communication_Channels: [ 'Text' ] },
+  { _id: 13708, Communication_Channels: [ 'In-Person Meeting' ] }
+]
+
+_______________________________________________________________________________________
+11.) finf maximum Premium_Amount of Occupation:"Entrepreneur" where Policy_Type_Data 4 & 5 and NOT 2 & 3 for Geographic_Information
+
+db.customers.aggregate({$match:{Policy_Type_Data:{$in:[4,5]},Policy_Type_Data:{$nin:[2,3]},Occupation:"Entrepreneur"}},{$group:{_id:"$Geographic_Information",Maximum_Premium_Amount:{$max:"$Premium_Amount"}}})
+
+[
+  { _id: 'Telangana', Maximum_Premium_Amount: 5000 },
+  { _id: 'Arunachal Pradesh', Maximum_Premium_Amount: 4903 },
+  { _id: 'Daman and Diu', Maximum_Premium_Amount: 4969 },
+  { _id: 'Gujarat', Maximum_Premium_Amount: 4949 },
+  { _id: 'Bihar', Maximum_Premium_Amount: 5000 },
+  { _id: 'Sikkim', Maximum_Premium_Amount: 4932 },
+  { _id: 'Uttarakhand', Maximum_Premium_Amount: 4903 },
+  { _id: 'Madhya Pradesh', Maximum_Premium_Amount: 4966 },
+  { _id: 'Rajasthan', Maximum_Premium_Amount: 4894 },
+  { _id: 'Kerala', Maximum_Premium_Amount: 4872 },
+  { _id: 'Lakshadweep', Maximum_Premium_Amount: 4911 },
+  { _id: 'Karnataka', Maximum_Premium_Amount: 4866 },
+  { _id: 'Puducherry', Maximum_Premium_Amount: 4834 },
+  { _id: 'Andaman and Nicobar Islands', Maximum_Premium_Amount: 5000 },
+  { _id: 'Uttar Pradesh', Maximum_Premium_Amount: 4925 },
+  { _id: 'Mizoram', Maximum_Premium_Amount: 4950 },
+  { _id: 'West Bengal', Maximum_Premium_Amount: 5000 },
+  { _id: 'Dadra and Nagar Haveli', Maximum_Premium_Amount: 4920 },
+  { _id: 'Tamil Nadu', Maximum_Premium_Amount: 4902 },
+  { _id: 'Jharkhand', Maximum_Premium_Amount: 5000 }
+]
+
+____________________________________________________________________________________________________________________
+
+12.)Perform Map Reduce function using MONGODB to count Geographic_Information.
+
+var map=function(){emit(this.Geographic_Information,1);}
+var reduce=function(key,count){return Array.sum(count);}
+db.customers.mapReduce(map,reduce,{out:"Total_Count"})
+db.Total_Count.find()
+
+[
+  { _id: 'Meghalaya', value: 1447 },
+  { _id: 'West Bengal', value: 1464 },
+  { _id: 'Arunachal Pradesh', value: 1903 },
+  { _id: 'Uttarakhand', value: 1758 },
+  { _id: 'Himachal Pradesh', value: 1963 },
+  { _id: 'Jharkhand', value: 1578 },
+  { _id: 'Andaman and Nicobar Islands', value: 1678 },
+  { _id: 'Goa', value: 1605 },
+  { _id: 'Chhattisgarh', value: 1451 },
+  { _id: 'Dadra and Nagar Haveli', value: 1403 },
+  { _id: 'Manipur', value: 1391 },
+  { _id: 'Chandigarh', value: 1376 },
+  { _id: 'Odisha', value: 1280 },
+  { _id: 'Telangana', value: 1007 },
+  { _id: 'Daman and Diu', value: 1512 },
+  { _id: 'Gujarat', value: 1895 },
+  { _id: 'Assam', value: 1460 },
+  { _id: 'Punjab', value: 1243 },
+  { _id: 'Tripura', value: 1377 },
+  { _id: 'Tamil Nadu', value: 1324 }
+]
+
+____________________________________________________________________________________________________________________
+13.) Display last 5 age.
+
+db.customers.find({},{_id:0}).sort({Age:-1}).limit(5)
+
+[
+  {
+    Customer_ID: 71321,
+    Age: 70,
+    Gender: 'Male',
+    Marital_Status: 'Separated',
+    Education_Level: 'High School Diploma',
+    Geographic_Information: 'Puducherry',
+    Occupation: 'Engineer',
+    Income_Level: 28356,
+    Policy_Type_Data: 3,
+    Purchase_History: ISODate('2020-09-06T18:30:00.000Z'),
+    Interactions_Customer_Service: 'Mobile App',
+    Insurance_Products_Owned: 4,
+    Coverage_Amount: 474860,
+    Premium_Amount: 3224,
+    Policy_Type: 'Group',
+    Customer_Preferences: 'Text',
+    Communication_Channel: 'Text',
+    Preferred_Contact_Time: 'Evening',
+    Preferred_Language: 'German',
+    Segmentation_Group: 4
+  },
+  {
+    Customer_ID: 86289,
+    Age: 70,
+    Gender: 'Male',
+    Marital_Status: 'Widowed',
+    Education_Level: "Bachelor's Degree",
+    Geographic_Information: 'Sikkim',
+    Occupation: 'Teacher',
+    Income_Level: 134035,
+    Policy_Type_Data: 3,
+    Purchase_History: ISODate('2018-03-21T18:30:00.000Z'),
+    Interactions_Customer_Service: 'Chat',
+    Insurance_Products_Owned: 5,
+    Coverage_Amount: 557438,
+    Premium_Amount: 3651,
+    Policy_Type: 'Family',
+    Customer_Preferences: 'In-Person Meeting',
+    Communication_Channel: 'Email',
+    Preferred_Contact_Time: 'Weekends',
+    Preferred_Language: 'German',
+    Segmentation_Group: 5
+  },
+]
+
